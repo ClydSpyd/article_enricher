@@ -2,7 +2,7 @@
 "use client";
 import { rssSources } from "../../../api/rss-sources";
 import API from "../../../api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ListItem from "./list-item";
 
 // const dummyArticle = {
@@ -17,9 +17,14 @@ import ListItem from "./list-item";
 
 export default function DiscoverPage() {
   const [mapItems, setMapItems] = useState<FeedItem[]>([]);
+  const [selectedSource, setSelectedSource] = useState<RssSource | null>(rssSources[0]);
   const [loading, setLoading] = useState<boolean>(false);
-  const doTheThing = async (url: string, isJSON: boolean) => {
-    console.log("URL:", url);
+
+  useEffect(() => {
+    if(selectedSource) fetchRssData(selectedSource.url, !!selectedSource.jsonResponse);
+  }, [selectedSource]);
+
+  const fetchRssData = async (url: string, isJSON: boolean) => {
     setLoading(true);
     if (!isJSON) {
       const { data: rssData, error } = await API.feed.rss(url);
@@ -32,14 +37,15 @@ export default function DiscoverPage() {
     }
     setLoading(false);
   };
+
   return (
-    <div className="w-screen h-screen flex">
-      <div className="w-[400px] h-full border border-white p-4">
+    <div className="w-screen h-full flex">
+      <div className="min-w-[400px] max-w-[400px] h-full p-4">
         <h4 className="font-semibold">Article Feeds:</h4>
         <div className="w-full flex flex-col gap-1">
           {rssSources.map((source: RssSource) => (
             <div
-              onClick={() => doTheThing(source.url, !!source.jsonResponse)}
+              onClick={() => setSelectedSource(source)}
               key={source.name}
               className="w-full border p-2 flex items-center gap-4 cursor-pointer"
             >
@@ -53,12 +59,12 @@ export default function DiscoverPage() {
           ))}
         </div>
       </div>
-      <div className="grow p-4 flex flex-col gap-1 overflow-y-auto">
+      <div className="grow h-full p-4 flex flex-col gap-1 overflow-y-scroll">
         {loading ? (
           <div>Loading...</div>
         ) : (
           mapItems?.map((item: FeedItem) => (
-            <ListItem key={item.name} item={item} />
+            <ListItem key={item.name} item={item} withButtons />
           ))
         )}
       </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import QueueProvider from "@/contexts/queue-context";
+import Navbar from "@/components/navbar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -27,9 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen`}
       >
-        <QueueProvider>{children}</QueueProvider>
+        <Navbar />
+        <div className="flex-grow overflow-hidden p-2">
+          <QueueProvider>{children}</QueueProvider>
+        </div>
       </body>
     </html>
   );

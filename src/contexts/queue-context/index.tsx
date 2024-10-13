@@ -1,6 +1,7 @@
 "use client";
-import { createContext, use, useState } from "react";
+import { createContext, use } from "react";
 import { QueueContextState, defaultQueueContextState } from "./types";
+import { useLocalStorage } from "usehooks-ts";
 
 const QueueContext = createContext<QueueContextState>(defaultQueueContextState);
 
@@ -9,7 +10,10 @@ export default function QueueProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [queuedItems, setQueuedItems] = useState<FeedItem[]>([]);
+  const [queuedItems, setQueuedItems] = useLocalStorage<FeedItem[]>(
+    "queuedItems",
+    []
+  );
   
   const retreiveQueueItem = (id: string) =>
     queuedItems.find((item) => item.name === id);
