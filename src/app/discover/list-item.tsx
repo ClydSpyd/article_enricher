@@ -6,9 +6,11 @@ import Image from "next/image";
 
 export default function ListItem({
   item,
-  withButtons,
+  selected,
+  withButtons
 }: {
   item: FeedItem;
+  selected: boolean;
   withButtons?: boolean;
 }) {
   const { retreiveQueueItem, addItemToQueue, removeItemFromQueue } = useQueue();
@@ -24,7 +26,12 @@ export default function ListItem({
   };
 
   return (
-    <div className="w-full border p-2 flex items-center gap-4">
+    <div
+      className={cn(
+        "w-full border p-2 flex items-center gap-4",
+        selected ? "bg-lime-300" : ""
+      )}
+    >
       <div className="min-h-[80px] min-w-[80px] border relative">
         <Image
           layout="fill"

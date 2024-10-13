@@ -31,7 +31,7 @@ export default function Navbar() {
       <div className="flex gap-4">
         <NavItem text="Discover" route="/discover" />
         <NavItem text="Create" route="/create" />
-        <NavItem text="Queue" route="/queue" />
+        <NavItem text="Browse" route="/browse" />
       </div>
     </div>
   );

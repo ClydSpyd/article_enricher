@@ -27,6 +27,7 @@ declare interface FeedItem {
 }
 
 declare interface Article {
+  _id?: string;
   title: string;
   caption: string;
   content: string;
@@ -34,4 +35,5 @@ declare interface Article {
   tags: string[];
   source: string;
   sourceUrl: string;
+  blocks: Block[];
 }
