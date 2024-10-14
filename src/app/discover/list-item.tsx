@@ -28,7 +28,7 @@ export default function ListItem({
   return (
     <div
       className={cn(
-        "w-full border p-2 flex items-center gap-4",
+        "w-full border p-2 flex items-center gap-4 cursor-pointer",
         selected ? "bg-lime-300" : ""
       )}
     >

@@ -21,8 +21,8 @@ export default function QueueProvider({
   const addItemToQueue = (item: FeedItem) => {
     setQueuedItems((prev) => [...prev, item]);
   };
-  const removeItemFromQueue = (id: string) => {
-    setQueuedItems((prev) => prev.filter((item) => item.name !== id));
+  const removeItemFromQueue = (url: string) => {
+    setQueuedItems((prev) => prev.filter((item) => item.url !== url));
   };
 
   return (

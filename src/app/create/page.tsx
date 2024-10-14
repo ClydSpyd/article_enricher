@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Block } from "@blocknote/core";
 import TextEditor from "@/components/text-editor";
 import { useQueue } from "@/contexts/queue-context";
@@ -8,10 +8,19 @@ import API from "../../../api";
 import InputField from "@/components/input-field";
 import { LocalFields, defaultValues } from "./types";
 import { MdOutlineOpenInNew } from "react-icons/md";
+import TagSelector from "@/components/tag-selector";
+import { hasEmptyFields } from "./helpers";
+import { useIsFirstRender } from "@/hooks/isFirstRender";
 
 const Queue = dynamic(() => import("./queue"), { ssr: false });
 export default function CreatePage() {
-  const { queuedItems = [] } = useQueue();
+  const { queuedItems = [], removeItemFromQueue } = useQueue();
+  const [submitData, setSubmitData] = useState<{
+    msg: string | null;
+    error: boolean;
+  }>({ msg: null, error: false });
+  const isFirstRender = useIsFirstRender()
+  const [formFilled, setFormFilled] = useState<boolean>(false);
   const [localFields, setLocalFields] = useState<LocalFields>(defaultValues);
   const [selectedArticle, setSelectedArticle] = useState<FeedItem | null>(
     queuedItems[0]
@@ -24,31 +33,45 @@ export default function CreatePage() {
       tags: [],
       sourceUrl: selectedArticle?.url ?? "",
       imgUrl: selectedArticle?.imgUrl ?? "",
-    })
+    });
   }, [selectedArticle]);
+
+  useEffect(() => {
+    setFormFilled(!hasEmptyFields(localFields));
+  }, [localFields]);
 
   const saveCallback = async (blocks: Block[], html: string) => {
     const payload: Article = {
-      title: "New Article",
-      caption: "A new caption for the article",
+      ...localFields,
+      source: "web",
       content: html,
-      imgUrl: "https://example.com/image.jpg",
-      tags: ["news", "tech"],
-      source: "Tech News",
-      sourceUrl: "https://example.com/source",
       blocks,
     };
-    const { status, data, error } = await API.article.createArticle(payload);
-    console.log({ status, data, error });
+    const { data, error } = await API.article.createArticle(payload);
+    if (data) {
+      setSubmitData({ msg: "article saved successfully", error: false });
+      setSelectedArticle(null);
+      setLocalFields(defaultValues);
+      removeItemFromQueue(selectedArticle?.url ?? "");
+      setTimeout(() => {
+        setSelectedArticle(queuedItems[0]);
+      }, 200);
+    } else if (error) {
+      setSubmitData({ msg: "failed to save article", error: true });
+    }
   };
 
-  const handleInputChange = (
-    value:string,
-    key: keyof typeof localFields
-  ) => {
+  const handleInputChange = (value: string, key: keyof typeof localFields) => {
     setLocalFields((prev: LocalFields) => ({
       ...prev,
       [key]: value,
+    }));
+  };
+
+  const handleTags = (tags: string[]) => {
+    setLocalFields((prev: LocalFields) => ({
+      ...prev,
+      tags,
     }));
   };
 
@@ -74,6 +97,10 @@ export default function CreatePage() {
             value={localFields.caption}
             onChange={(val: string) => handleInputChange(val, "caption")}
           />
+          <TagSelector
+            tags={localFields.tags}
+            setTags={(tags: string[]) => handleTags(tags)}
+          />
           <div className="flex gap-2 items-center p-2 border rounded-sm">
             <p className="text-[#a0a0a0]">Source URL:</p>
             <p className="grow text-lime-500">{localFields.sourceUrl}</p>
@@ -84,7 +111,14 @@ export default function CreatePage() {
             </a>
           </div>
         </div>
-        <TextEditor saveCallback={saveCallback} />
+        {selectedArticle && !isFirstRender && (
+          <TextEditor
+            saveCallback={saveCallback}
+            postSubmistMsg={submitData.msg}
+            isError={submitData.error}
+            canSubmit={formFilled}
+          />
+        )}
       </div>
     </div>
   );
